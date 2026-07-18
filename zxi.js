@@ -5,7 +5,6 @@
     const PASSWORD_URL = "https://raw.githubusercontent.com/z-x-i/zxi/refs/heads/main/zx.txt";
     const AUDIO_URL = "https://github.com/z-x-i/zxi/raw/refs/heads/main/zxi.mp3";
 
-    // ক্লিনআপ: আগের এলিমেন্ট রিমুভ
     const oldOverlay = document.getElementById('zxi-global-overlay');
     if(oldOverlay) oldOverlay.remove();
 
@@ -13,19 +12,17 @@
     let rainAudio = null;
     let cachedPassword = null;
 
-    // পাসওয়ার্ডটি ব্যাকগ্রাউন্ডে আগে থেকেই ফেচ করে রাখা হচ্ছে
     async function fetchPassword() {
         try {
             const response = await fetch(`${PASSWORD_URL}?t=${Date.now()}`);
             const text = await response.text();
             cachedPassword = text.trim();
         } catch (e) {
-            console.error("Failed to fetch secure token, falling back.", e);
+            console.error("Token fetch error", e);
         }
     }
     fetchPassword();
 
-    // সিএসএস স্টাইল ইনজেকশন (গ্লাস মরফিজম UI)
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         @keyframes ui-entrance {
@@ -62,23 +59,23 @@
     `;
     document.head.appendChild(styleSheet);
 
-    // ফুল-স্ক্রিন পিচ-ব্ল্যাক ওভারলে
     const globalOverlay = document.createElement('div');
     globalOverlay.id = 'zxi-global-overlay';
     globalOverlay.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:#020204; z-index:2147483646; overflow:hidden; display:flex; align-items:center; justify-content:center;';
     
     globalOverlay.innerHTML = `
-        <!-- রিয়ালিস্টিক রেইন ও স্প্ল্যাশ ক্যানভাস -->
+        <!-- ব্যাকগ্রাউন্ড ও বক্স কলাইড রেইন ক্যানভাস -->
         <canvas id="zxi-rain-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;"></canvas>
         
-        <!-- সাউন্ড কন্ট্রোল বাটন -->
-        <button id="zxi-sound-toggle" style="position:fixed; top:30px; left:30px; z-index:2147483647; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px 18px; border-radius:20px; cursor:pointer; font-family:sans-serif; font-size:13px; backdrop-filter:blur(10px); transition:0.3s;">🔊 Mute Audio</button>
-
-        <!-- মেইন ইন্টারফেস বক্স -->
-        <div id="zxi-auth-box" style="position:relative; z-index:2; background:rgba(10, 10, 12, 0.45); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); color:#ffffff; padding:50px 40px; border-radius:28px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align:center; border:1px solid rgba(255, 255, 255, 0.06); width:400px; box-sizing:border-box; animation: ui-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
-            <button id="zxi-panel-close" style="position:absolute; top:25px; right:25px; background:none; border:none; color:rgba(255,255,255,0.3); font-size:14px; cursor:pointer; font-weight:500; outline:none; transition:0.3s;">✕ CLOSE</button>
+        <!-- মেইন গ্লাস ইন্টারফেস বক্স -->
+        <div id="zxi-auth-box" style="position:relative; z-index:2; background:rgba(10, 10, 12, 0.45); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); color:#ffffff; padding:55px 40px 45px 40px; border-radius:28px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align:center; border:1px solid rgba(255, 255, 255, 0.06); width:400px; box-sizing:border-box; animation: ui-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
             
-            <div id="zxi-dynamic-content">
+            <!-- অডিও বাটন এখন ক্লোজ বাটনের সমান্তরালে বাম পাসে সোজা চলে এসেছে -->
+            <button id="zxi-sound-toggle" style="position:absolute; top:25px; left:25px; background:none; border:none; color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer; font-weight:500; outline:none; transition:0.3s; padding:0;">🔊 MUTE</button>
+            
+            <button id="zxi-panel-close" style="position:absolute; top:25px; right:25px; background:none; border:none; color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer; font-weight:500; outline:none; transition:0.3s; padding:0;">✕ CLOSE</button>
+            
+            <div id="zxi-dynamic-content" style="margin-top: 15px;">
                 <h3 style="margin:0 0 6px 0; color:#ffffff; font-size:26px; font-weight:700; letter-spacing:-0.5px;">ZXI CONSOLE</h3>
                 <p style="margin:0 0 35px 0; color:rgba(255, 255, 255, 0.4); font-size:13px;">Secure Access Terminal</p>
                 
@@ -91,7 +88,6 @@
     `;
     document.body.appendChild(globalOverlay);
 
-    // অডিও ইঞ্জিন (ইউজারের দেওয়া নির্দিষ্ট ট্র্যাক)
     function initRainAudio() {
         rainAudio = new Audio(AUDIO_URL); 
         rainAudio.loop = true;
@@ -106,18 +102,16 @@
         document.getElementById('zxi-sound-toggle').addEventListener('click', function() {
             if (rainAudio.paused) {
                 rainAudio.play();
-                this.textContent = "🔊 Mute Audio";
-                this.style.background = "rgba(255,255,255,0.05)";
+                this.textContent = "🔊 MUTE";
             } else {
                 rainAudio.pause();
-                this.textContent = "🔇 Unmute Audio";
-                this.style.background = "rgba(255,68,68,0.15)";
+                this.textContent = "🔇 UNMUTE";
             }
         });
     }
     initRainAudio();
 
-    // আল্ট্রা-রিয়ালিস্টিক রেইন স্প্ল্যাশ ইঞ্জিন (Collision Detection with UI)
+    // মেইন ফিজিক্স ড্রপলেট এবং বক্স ড্রিইপিং সিমুলেটর
     function initRealisticRainAndSplash() {
         const canvas = document.getElementById('zxi-rain-canvas');
         const authBox = document.getElementById('zxi-auth-box');
@@ -130,28 +124,27 @@
         const maxDrops = 140; 
         const drops = [];
         const splashes = [];
+        const boxDrips = []; // বক্সে বেয়ে পড়া পানির ফোঁটা
 
-        // বৃষ্টির ফোঁটা জেনারেট করা (সাইজ বড় এবং ড্রপ থিকনেস বাড়ানো হয়েছে)
         for (let i = 0; i < maxDrops; i++) {
             drops.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * -canvas.height,
-                length: Math.random() * 25 + 25,     // বড় ফোঁটা (২৫px থেকে ৫০px)
-                speed: Math.random() * 20 + 20,     // দ্রুত গতিতে পড়ার জন্য
-                opacity: Math.random() * 0.25 + 0.1, // বেশি উজ্জ্বল ও স্পষ্ট
-                weight: Math.random() * 1.8 + 1.2    // ফোঁটাগুলো মোটা ও স্পষ্ট দেখাবে
+                length: Math.random() * 25 + 25, 
+                speed: Math.random() * 20 + 20, 
+                opacity: Math.random() * 0.25 + 0.1, 
+                weight: Math.random() * 1.8 + 1.2 
             });
         }
 
-        // স্প্ল্যাশ বা ছিটা তৈরি করার ফাংশন
         function createSplash(x, y) {
-            const particleCount = Math.floor(Math.random() * 4) + 3; // প্রতি ফোঁটায় ৩-৬ টি ছিটা বের হবে
+            const particleCount = Math.floor(Math.random() * 3) + 3;
             for (let i = 0; i < particleCount; i++) {
                 splashes.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 4, // ডানে-বামে ছিটকে যাওয়া
-                    vy: (Math.random() * -3) - 1,    // ওপরের দিকে ছিটকে যাওয়া
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() * -2.5) - 1,
                     radius: Math.random() * 1 + 0.8,
                     alpha: 0.5,
                     life: 1.0
@@ -161,40 +154,74 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // মেইন UI বক্সের পজিশন ট্র্যাক করা (রিয়েল-টাইম কলিশন চেকিংয়ের জন্য)
             const boxRect = authBox.getBoundingClientRect();
 
-            // ১. বৃষ্টির ফোঁটা ড্রয়িং ও আপডেট
+            // ১. ব্যাকগ্রাউন্ডের মেইন রেইনফল ড্রয়িং
             for (let i = 0; i < maxDrops; i++) {
                 const d = drops[i];
                 
                 ctx.beginPath();
                 ctx.moveTo(d.x, d.y);
-                ctx.lineTo(d.x + 1.5, d.y + d.length); // বাতাসের কারণে স্লাইট অ্যাঙ্গেল
+                ctx.lineTo(d.x + 1.5, d.y + d.length);
                 ctx.strokeStyle = `rgba(180, 215, 255, ${d.opacity})`;
                 ctx.lineWidth = d.weight;
                 ctx.lineCap = 'round';
                 ctx.stroke();
 
-                // পজিশন আপডেট
                 d.y += d.speed;
                 d.x += 0.6;
 
-                // UI বক্সের সাথে ধাক্কা লাগলে ছিটা (Splash) তৈরি হবে
+                // বক্সের ওপরের ওয়াটার কলিশন হ্যান্ডলিং
                 if (d.x >= boxRect.left && d.x <= boxRect.right && d.y >= boxRect.top && d.y <= boxRect.top + 15) {
                     createSplash(d.x, boxRect.top);
+                    
+                    // বক্সে পানি বেয়ে পড়ার জন্য ড্রিইপ তৈরি হচ্ছে
+                    if (Math.random() > 0.4) {
+                        boxDrips.push({
+                            x: d.x,
+                            y: boxRect.top,
+                            radius: Math.random() * 2 + 1.5, // পানির বিন্দুর সাইজ
+                            speed: Math.random() * 1.5 + 1,  // বেয়ে পড়ার ধীর গতি
+                            alpha: Math.random() * 0.4 + 0.3
+                        });
+                    }
+                    
                     d.y = Math.random() * -50;
                     d.x = Math.random() * canvas.width;
                 }
-                // স্ক্রিনের নিচে চলে গেলে রিসেট
                 else if (d.y > canvas.height) {
                     d.y = Math.random() * -50;
                     d.x = Math.random() * canvas.width;
                 }
             }
 
-            // ২. বৃষ্টির ছিটা (Splash Particles) ড্রয়িং ও আপডেট
+            // ২. বক্সের গা বেয়ে রিয়ালিস্টিক পানি পড়া (Water Dripping Effect)
+            for (let i = boxDrips.length - 1; i >= 0; i--) {
+                const drip = boxDrips[i];
+                
+                ctx.beginPath();
+                ctx.arc(drip.x, drip.y, drip.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 225, 255, ${drip.alpha})`;
+                ctx.fill();
+
+                // পানির ট্রেইল বা দাগ তৈরি করা
+                ctx.beginPath();
+                ctx.moveTo(drip.x, drip.y - 4);
+                ctx.lineTo(drip.x, drip.y);
+                ctx.strokeStyle = `rgba(200, 225, 255, ${drip.alpha * 0.4})`;
+                ctx.lineWidth = drip.radius * 0.8;
+                ctx.stroke();
+
+                // পজিশন আপডেট (নিচের দিকে নামা)
+                drip.y += drip.speed;
+
+                // বক্সের নিচের বর্ডার পার হয়ে গেলে মুছে যাবে
+                if (drip.y > boxRect.bottom) {
+                    boxDrips.splice(i, 1);
+                }
+            }
+
+            // ৩. বৃষ্টির ছিটা (Splashes) ড্রয়িং
             for (let i = splashes.length - 1; i >= 0; i--) {
                 const p = splashes[i];
                 ctx.beginPath();
@@ -202,11 +229,10 @@
                 ctx.fillStyle = `rgba(180, 215, 255, ${p.alpha})`;
                 ctx.fill();
 
-                // ছিটার গতিপথ পরিবর্তন
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.15; // গ্র্যাভিটি ইফেক্ট (ছিটা উঠে আবার নিচে পড়বে)
-                p.alpha -= 0.04; // আস্তে আস্তে ভ্যানিশ হওয়া
+                p.vy += 0.15; 
+                p.alpha -= 0.04;
                 p.life -= 0.04;
 
                 if (p.alpha <= 0 || p.life <= 0) {
@@ -226,7 +252,6 @@
     }
     setTimeout(initRealisticRainAndSplash, 60);
 
-    // সম্পূর্ণ ক্লোজ ও ক্লিনআপ
     function cleanup() {
         if (rainAnimationId) cancelAnimationFrame(rainAnimationId);
         if (rainAudio) {
@@ -237,7 +262,6 @@
     }
     document.getElementById('zxi-panel-close').addEventListener('click', cleanup);
 
-    // সাকসেসফুল ভেরিফিকেশনের পর মূল অপশন প্যানেল
     function showMainOptionsPanel() {
         const contentDiv = document.getElementById('zxi-dynamic-content');
         contentDiv.innerHTML = `
@@ -292,7 +316,6 @@
         });
     }
 
-    // গিটহাব টক্সট ফাইল ম্যাচিং লগইন হ্যান্ডলার
     const keyInput = document.getElementById('zxi-key-input');
     const loginBtn = document.getElementById('zxi-login-btn');
     const statusDiv = document.getElementById('zxi-status');
@@ -306,7 +329,6 @@
         
         statusDiv.innerHTML = "<span style='color:rgba(255,255,255,0.5);'>Verifying live network token...</span>";
         
-        // ব্যাকগ্রাউন্ডে পাসওয়ার্ড ফেচ কমপ্লিট না হয়ে থাকলে আবার রিয়েল-টাইম ট্রাই করবে
         if (!cachedPassword) {
             await fetchPassword();
         }
