@@ -114,7 +114,7 @@
     ctx.save();
     ctx.translate(cx, cy);
     if (mirror) {
-      ctx.scale(-1, 1); // Flip horizontally for the opposite eye
+      ctx.scale(-1, 1); // Exact fix for orientation
     }
 
     const openAmt = 1 - blink;
@@ -241,8 +241,9 @@
     const eyeHeight = eyeWidth * 0.42;
     const cy = h / 2;
 
-    drawEye(w / 2 - eyeDistance, cy, eyeWidth, eyeHeight, false, modes[mode], 1, t);
-    drawEye(w / 2 + eyeDistance, cy, eyeWidth, eyeHeight, true, modes[mode], -1, t);
+    // Fixed left and right eye mirroring logic
+    drawEye(w / 2 - eyeDistance, cy, eyeWidth, eyeHeight, true, modes[mode], 1, t);
+    drawEye(w / 2 + eyeDistance, cy, eyeWidth, eyeHeight, false, modes[mode], -1, t);
 
     const vg = ctx.createRadialGradient(w / 2, h / 2, h * 0.28, w / 2, h / 2, h * 0.75);
     vg.addColorStop(0, 'rgba(0,0,0,0)');
